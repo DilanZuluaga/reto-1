@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
   m_Name: knight_lvl2_Atlas
   m_EditorClassIdentifier: 
-  atlasFile: {fileID: 4900000, guid: c24ad1667df634649b39bfb9d42be322, type: 3}
+  textureLoadingMode: 0
+  onDemandTextureLoader: {fileID: 0}
+  atlasFile: {fileID: 4900000, guid: efda8edf2ab217e418d1d35d1a9792ac, type: 3}
   materials:
   - {fileID: 2100000, guid: 91ac04d2bede6f94a89d5fa4799ce529, type: 2}
