@@ -337,6 +337,10 @@ PrefabInstance:
       value: Spine GameObject (knight_lvl2)
       objectReference: {fileID: 0}
     - target: {fileID: 5523530769586308550, guid: 6ab8d446eddb88b4fbbb4c868a6d576e, type: 3}
+      propertyPath: _animationName
+      value: run_weapon
+      objectReference: {fileID: 0}
+    - target: {fileID: 5523530769586308550, guid: 6ab8d446eddb88b4fbbb4c868a6d576e, type: 3}
       propertyPath: initialSkinName
       value: 
       objectReference: {fileID: 0}

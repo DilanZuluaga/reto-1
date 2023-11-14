@@ -1,95 +1,92 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using Spine.Unity;
 
-public class PlayerControls : MonoBehaviour
+public class CharacterController : MonoBehaviour
 {
-    private Rigidbody2D rbd;
+    public SkeletonAnimation skeletonAnimation;
+    public AnimationReferenceAsset runWeapon;
+    public AnimationReferenceAsset jumpAnimation; // Referencia para la animación de salto
 
-    [Header("Wilk")]
-    private float horizontalmovement = 0f;
-    [SerializeField] private float speedlmovement;
-    [Range(0,0.3f)][SerializeField] private float smoothnessmovement;
-    private Vector3 speed = Vector3.zero;
-    private bool lookright = true;
+    public float speed = 10f;
+    public float jumpForce = 10f;
+    private bool isGrounded; // Asumimos que hay una manera de verificar si el personaje está en el suelo
 
-
-    [Header("Jump")]
-    [SerializeField] private float forcejump;
-    [SerializeField] private LayerMask whatissoil;
-    [SerializeField] private Transform floorcontroller;
-    [SerializeField] private Vector3 boxdimensions;
-    [SerializeField] private bool onground;
-    private bool jump = false;
-
-    [Header("Animation")]
-    private Animator animator;
-
+    private Rigidbody2D rb; // Referencia al componente Rigidbody2D
 
     private void Start()
     {
-        rbd = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
+        // Asegúrate de que el componente SkeletonAnimation está asignado
+        if (skeletonAnimation == null)
+            skeletonAnimation = GetComponent<SkeletonAnimation>();
+
+        // Obtener el componente Rigidbody2D
+        rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+        {
+            Debug.LogError("Rigidbody2D no está presente en el GameObject.");
+        }
+
     }
 
     private void Update()
     {
-        horizontalmovement = Input.GetAxisRaw("Horizontal") * speedlmovement;
+        // Movimiento horizontal
+        float horizontal = Input.GetAxis("Horizontal");
+        Vector2 movement = new Vector2(horizontal, 0);
+        rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
 
-        animator.SetFloat("Horizontal", Mathf.Abs(horizontalmovement));
+        // Reproducir animación de correr con arma
+        if (Mathf.Abs(horizontal) > 0.1f) // Verifica si hay movimiento horizontal significativo
+        {
+            SetAnimation(runWeapon, true);
+        }
 
-        animator.SetFloat("Speedy", rbd.velocity.y);
-
+        // Verificar si se presiona la tecla de salto y el personaje está en el suelo
         if (Input.GetButtonDown("Jump"))
         {
-            jump = true;
+            Debug.Log("Intento de salto detectado");
+            if (isGrounded)
+            {
+                Debug.Log("Salto ejecutado");
+                Jump();
+            }
+            else
+            {
+                Debug.Log("El personaje no está en el suelo");
+            }
         }
-
-
     }
 
-    private void FixedUpdate()
+    private void SetAnimation(AnimationReferenceAsset animation, bool loop)
     {
-        movement(horizontalmovement * Time.fixedDeltaTime, jump);
-
-        onground = Physics2D.OverlapBox(floorcontroller.position, boxdimensions, 0f, whatissoil);
-        jump= false;
-
-        animator.SetBool("Onground", onground);
-    }
-
-    private void movement(float movement , bool jump)
-    {
-        Vector3 objectspeed = new Vector2(movement, rbd.velocity.y);
-        rbd.velocity = Vector3.SmoothDamp(rbd.velocity, objectspeed, ref speed, smoothnessmovement); 
-
-        if (movement > 0 && lookright)
+        // Cambia la animación solo si es diferente a la actual
+        if (skeletonAnimation.AnimationName != animation.name)
         {
-            spin();
-        }
-        else if (movement < 0 && lookright)
-        {
-            spin();
-        }
-
-        if (onground && jump)
-        {
-            onground = false;
-            rbd.AddForce(new Vector2(0f , forcejump));
+            skeletonAnimation.state.SetAnimation(0, animation, loop);
         }
     }
 
-    private void spin()
+    private void Jump()
     {
-        lookright = !lookright;
-        Vector3 scale = transform.localScale;
-        scale.x *= 1;
-        transform.localScale = scale; 
+        Debug.Log($"Saltando con fuerza de: {jumpForce}");
+        // Añadir una fuerza hacia arriba para simular el salto
+        rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+
+        // Reproducir la animación de salto
+        SetAnimation(jumpAnimation, false); // El salto no se repite en bucle
+
+        isGrounded = false; // El personaje ya no está en el suelo
     }
 
-    private void OnDrawGizmos()
+    // Método para verificar si el personaje ha vuelto al suelo
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawCube(floorcontroller.position, boxdimensions);
+        // Asegúrate de que el objeto con el que colisiona es el terreno
+        if (collision.collider.CompareTag("Ground"))
+        {
+            isGrounded = true;
+        }
     }
+
+
 }
