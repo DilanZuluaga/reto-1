@@ -305,8 +305,10 @@ MonoBehaviour:
   skeletonAnimation: {fileID: 41617438}
   runWeapon: {fileID: 11400000, guid: 61ed9d8498d055d4891378bc1996e372, type: 2}
   jumpAnimation: {fileID: 11400000, guid: d63458a3ec69a9941b8c26f5026077c9, type: 2}
+  idleAnimation: {fileID: 11400000, guid: 84b6f9b2d8ec57f4e96b4c521d6d4462, type: 2}
+  attackAnimation: {fileID: 11400000, guid: 89dfcecece6ef2a47aa3621c380691fd, type: 2}
   speed: 30
-  jumpForce: 10
+  jumpForce: 40
 --- !u!1 &43670326
 GameObject:
   m_ObjectHideFlags: 0
@@ -10942,19 +10944,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5523530769586308547, guid: 6ab8d446eddb88b4fbbb4c868a6d576e, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.7355
+      value: 0.6734973
       objectReference: {fileID: 0}
     - target: {fileID: 5523530769586308547, guid: 6ab8d446eddb88b4fbbb4c868a6d576e, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.6913
+      value: 0.6256956
       objectReference: {fileID: 0}
     - target: {fileID: 5523530769586308547, guid: 6ab8d446eddb88b4fbbb4c868a6d576e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -53.8095
+      value: -53.9383
       objectReference: {fileID: 0}
     - target: {fileID: 5523530769586308547, guid: 6ab8d446eddb88b4fbbb4c868a6d576e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.1429
+      value: -0.1393
       objectReference: {fileID: 0}
     - target: {fileID: 5523530769586308547, guid: 6ab8d446eddb88b4fbbb4c868a6d576e, type: 3}
       propertyPath: m_LocalPosition.z

@@ -5,61 +5,91 @@ public class CharacterController : MonoBehaviour
 {
     public SkeletonAnimation skeletonAnimation;
     public AnimationReferenceAsset runWeapon;
-    public AnimationReferenceAsset jumpAnimation; // Referencia para la animación de salto
+    public AnimationReferenceAsset jumpAnimation;
+    public AnimationReferenceAsset idleAnimation;
+    public AnimationReferenceAsset attackAnimation; // Asignar en el Inspector
 
     public float speed = 10f;
     public float jumpForce = 10f;
-    private bool isGrounded; // Asumimos que hay una manera de verificar si el personaje está en el suelo
+    private bool isGrounded;
+    private bool isAttacking;
+    private float attackCooldown = 1f; // Duración estimada de la animación de ataque
+    private float lastAttackTime; // Tiempo cuando se realizó el último ataque
 
-    private Rigidbody2D rb; // Referencia al componente Rigidbody2D
+    private Rigidbody2D rb;
 
     private void Start()
     {
-        // Asegúrate de que el componente SkeletonAnimation está asignado
-        if (skeletonAnimation == null)
-            skeletonAnimation = GetComponent<SkeletonAnimation>();
-
-        // Obtener el componente Rigidbody2D
+        skeletonAnimation = GetComponent<SkeletonAnimation>();
         rb = GetComponent<Rigidbody2D>();
-        if (rb == null)
+
+        // Asegúrate de que los componentes necesarios están presentes.
+        if (skeletonAnimation == null || rb == null)
         {
-            Debug.LogError("Rigidbody2D no está presente en el GameObject.");
+            Debug.LogError("Required component missing.");
         }
 
+        // Establecer la orientación inicial del personaje hacia la derecha
+        skeletonAnimation.transform.localScale = new Vector3(1f, 1f, 1f);
     }
 
     private void Update()
     {
-        // Movimiento horizontal
         float horizontal = Input.GetAxis("Horizontal");
-        Vector2 movement = new Vector2(horizontal, 0);
+
+        // Aplicar el movimiento horizontal
         rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
 
-        // Reproducir animación de correr con arma
-        if (Mathf.Abs(horizontal) > 0.1f) // Verifica si hay movimiento horizontal significativo
+        // Si hay movimiento horizontal significativo
+        if (Mathf.Abs(horizontal) > 0.1f)
         {
-            SetAnimation(runWeapon, true);
+            // Si no estamos atacando, permitir cambiar la animación y la dirección
+            if (!isAttacking)
+            {
+                SetAnimation(runWeapon, true);
+                FlipCharacter(horizontal);
+            }
+        }
+        else if (Mathf.Abs(horizontal) < 0.1f && isGrounded && !isAttacking)
+        {
+            // Si no hay movimiento horizontal y el personaje está en el suelo
+            SetAnimation(idleAnimation, true);
         }
 
-        // Verificar si se presiona la tecla de salto y el personaje está en el suelo
-        if (Input.GetButtonDown("Jump"))
+        // Salto
+        if (Input.GetButtonDown("Jump") && isGrounded && !isAttacking)
         {
-            Debug.Log("Intento de salto detectado");
-            if (isGrounded)
-            {
-                Debug.Log("Salto ejecutado");
-                Jump();
-            }
-            else
-            {
-                Debug.Log("El personaje no está en el suelo");
-            }
+            Jump();
+        }
+
+        // Ataque
+        if (Input.GetKeyDown(KeyCode.J) && !isAttacking && Time.time - lastAttackTime >= attackCooldown)
+        {
+            Attack();
+        }
+
+        // Permitir atacar de nuevo después de que la animación haya terminado
+        if (isAttacking && Time.time - lastAttackTime >= attackCooldown)
+        {
+            isAttacking = false;
+        }
+    }
+
+    private void FlipCharacter(float horizontal)
+    {
+        // Voltear el personaje para que mire en la dirección opuesta a la que se mueve
+        if (horizontal > 0)
+        {
+            skeletonAnimation.transform.localScale = new Vector3(-1f, 1f, 1f); // Mover hacia la derecha, mirar hacia la izquierda
+        }
+        else if (horizontal < 0)
+        {
+            skeletonAnimation.transform.localScale = new Vector3(1f, 1f, 1f); // Mover hacia la izquierda, mirar hacia la derecha
         }
     }
 
     private void SetAnimation(AnimationReferenceAsset animation, bool loop)
     {
-        // Cambia la animación solo si es diferente a la actual
         if (skeletonAnimation.AnimationName != animation.name)
         {
             skeletonAnimation.state.SetAnimation(0, animation, loop);
@@ -68,25 +98,31 @@ public class CharacterController : MonoBehaviour
 
     private void Jump()
     {
-        Debug.Log($"Saltando con fuerza de: {jumpForce}");
-        // Añadir una fuerza hacia arriba para simular el salto
         rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-
-        // Reproducir la animación de salto
-        SetAnimation(jumpAnimation, false); // El salto no se repite en bucle
-
-        isGrounded = false; // El personaje ya no está en el suelo
+        SetAnimation(jumpAnimation, false); // Asumiendo que la animación de salto no debe hacer loop
+        isGrounded = false; // Podrías querer mejorar la detección de si está en el suelo
     }
 
-    // Método para verificar si el personaje ha vuelto al suelo
+    private void Attack()
+    {
+        SetAnimation(attackAnimation, false); // Asumiendo que la animación de ataque no debe hacer loop
+        isAttacking = true;
+        lastAttackTime = Time.time;
+    }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // Asegúrate de que el objeto con el que colisiona es el terreno
         if (collision.collider.CompareTag("Ground"))
         {
             isGrounded = true;
         }
     }
 
-
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.collider.CompareTag("Ground"))
+        {
+            isGrounded = false;
+        }
+    }
 }
